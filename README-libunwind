@@ -1,0 +1,31 @@
+The compilation of strace with backtrace support is a bit problematic. Here is
+what should be done.
+
+Build libunwind according to instructions:
+$ ./autogen.sh
+$ ./configure
+$ make
+$ make check # two test cases will fail and that is expected
+
+The resulting libraries are in src/.libs, where we should add another symbolic
+link to satisfy the configure scripts of strace. This symlinking was painful to
+figure out.
+
+$ ln -s libunwind-x86_64.so libunwind-generic.so
+
+Now, we are ready to compile strace. We need to use the bootstrap script.
+
+$ ./bootstrap
+$ ./configure --with-libunwind=../libunwind LDFLAGS=-L../libunwind/src/.libs
+$ make
+
+Obviously, we assume in the above that libunwind root at ../libunwind.
+
+ldd shows that the strace binary depends on libunwind.so.8,
+libunwind-x86_64.so.8, and libunwind-ptrace.so.0. These libraries must be
+provided to the environment either by placing in standard locations, by
+defining an appropriate LD_LIBRARY_PATH, or some other way.
+
+Note that I could not get `make check` working in the build environment. All
+test cases failed; the likely reason is that libunwind libraries were not found
+while running test cases.
