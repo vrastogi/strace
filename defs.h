@@ -472,6 +472,7 @@ extern void dumpiov_in_mmsghdr(struct tcb *, long);
 extern void dumpiov(struct tcb *, int, long);
 extern void dumpstr(struct tcb *, long, int);
 extern void printstr(struct tcb *, long, long);
+extern void printstrsize(struct tcb *, long, long, unsigned int);
 extern void printnum_int(struct tcb *, long, const char *)
 	__attribute__ ((format (printf, 3, 0)));
 extern void printnum_long(struct tcb *, long, const char *)

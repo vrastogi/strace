@@ -747,9 +747,18 @@ printpath(struct tcb *tcp, long addr)
 void
 printstr(struct tcb *tcp, long addr, long len)
 {
+	printstrsize(tcp, addr, len, max_strlen);
+}
+
+/*
+ * Like printstr, but also take size as a parameter.
+ * Note: printstr definition could easily be just a call to printstrsize.
+ */
+void
+printstrsize(struct tcb *tcp, long addr, long len, unsigned int size)
+{
 	static char *str = NULL;
 	static char *outstr;
-	unsigned int size;
 	unsigned int style;
 	int ellipsis;
 
@@ -759,11 +768,11 @@ printstr(struct tcb *tcp, long addr, long len)
 	}
 	/* Allocate static buffers if they are not allocated yet. */
 	if (!str) {
-		unsigned int outstr_size = 4 * max_strlen + /*for quotes and NUL:*/ 3;
+		unsigned int outstr_size = 4 * size + /*for quotes and NUL:*/ 3;
 
-		if (outstr_size / 4 != max_strlen)
+		if (outstr_size / 4 != size)
 			die_out_of_memory();
-		str = malloc(max_strlen + 1);
+		str = malloc(size + 1);
 		if (!str)
 			die_out_of_memory();
 		outstr = malloc(outstr_size);
@@ -771,7 +780,6 @@ printstr(struct tcb *tcp, long addr, long len)
 			die_out_of_memory();
 	}
 
-	size = max_strlen;
 	if (len == -1) {
 		/*
 		 * Treat as a NUL-terminated string: fetch one byte more
@@ -797,7 +805,7 @@ printstr(struct tcb *tcp, long addr, long len)
 	 * or we were requested to print more than -s NUM chars)...
 	 */
 	ellipsis = (string_quote(str, outstr, size, style) &&
-			(len < 0 || (unsigned long) len > max_strlen));
+			(len < 0 || (unsigned long) len > size));
 
 	tprints(outstr);
 	if (ellipsis)
