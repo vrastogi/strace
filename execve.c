@@ -23,7 +23,8 @@ printargv(struct tcb *tcp, long addr)
 		if (cp.p64 == 0)
 			break;
 		tprints(sep);
-		printstr(tcp, cp.p64, -1);
+                /* we want everything printed for this call, so have a big length */
+		printstrsize(tcp, cp.p64, -1, 1024);
 		addr += wordsize;
 	}
 	if (cp.p64)
